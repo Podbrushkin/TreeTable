@@ -237,7 +237,7 @@ public class MyObjectForm {
         return new File(this.getClass().getResource(resourceName).getFile()).toPath().toString();
     }
 
-    private static void setSystemLookAndFeel() {
+    static void setSystemLookAndFeel() {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException | IllegalAccessException | UnsupportedLookAndFeelException e) {
