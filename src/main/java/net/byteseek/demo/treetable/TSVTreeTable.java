@@ -7,6 +7,7 @@ import javax.swing.tree.TreeNode;
 
 import net.byteseek.swing.treetable.TreeTableHeaderRenderer;
 import net.byteseek.swing.treetable.TreeTableModel;
+import net.byteseek.swing.treetable.TreeUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,6 +16,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class TSVTreeTable {
 
@@ -22,6 +24,8 @@ public class TSVTreeTable {
         MyObjectForm.setSystemLookAndFeel();
         if (args.length < 3) {
             System.err.println("Usage: java TSVTreeTable <tsv-file> <id-column> <parent-id-column>");
+            System.err.println("mvn clean compile package -q -e");
+            System.err.println("java -cp ./target/treetable-1.0-SNAPSHOT.jar net.byteseek.demo.treetable.TSVTreeTable fileTree.tsv id parentId");
             System.exit(1);
         }
 
@@ -32,6 +36,11 @@ public class TSVTreeTable {
         try {
             List<String[]> rows = parseTSV(tsvFile);
             DefaultMutableTreeNode root = buildTree(rows, idColumn, parentIdColumn);
+            
+            /* DefaultMutableTreeNode rootNode = TreeUtils.buildTree(root, (node) -> {
+                return Collections.list(node.children());
+                
+            }, node -> node); */
 
             // Display the tree in a JFrame
             SwingUtilities.invokeLater(() -> {
@@ -51,10 +60,7 @@ public class TSVTreeTable {
             System.err.println("Error reading TSV file: " + e.getMessage());
         }
     }
-
-    /**
-     * Parses a TSV file into a list of maps, where each map represents a row with column names as keys.
-     */
+    
     private static List<String[]> parseTSV(String filePath) throws IOException {
         return Files.readAllLines(Paths.get(filePath))
             .stream()
@@ -126,6 +132,11 @@ public class TSVTreeTable {
                     placeholderNode.add(nodeMap.get(row[idIndex]));
                 }
             }
+        }
+		// Don't display expansion button if there's no children
+        for (DefaultMutableTreeNode node : nodeMap.values()) {
+            boolean allows = node.getChildCount() > 0;
+            node.setAllowsChildren(allows);
         }
     
         // Add dangling parent nodes to the virtual root
